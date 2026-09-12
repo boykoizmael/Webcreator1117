@@ -109,12 +109,20 @@ export const CLIENT_MIRRORS: ClientMirror[] = [
     url: './game.html'
   },
   {
-    id: 'github-1.8.8',
-    name: 'EaglercraftX 1.8.8 (GitHub Pages Mirror)',
-    version: '1.8.8 GitHub',
-    description: 'Official community mirror hosted on GitHub Pages.',
-    badge: 'Community mirror',
-    url: 'https://eaglercraft1-8.github.io/'
+    id: 'github-pages-1.8.8',
+    name: 'EaglercraftX 1.8.8 (Public Pages Client)',
+    version: '1.8.8 Pages',
+    description: 'The same built-in client served from this website on GitHub Pages.',
+    badge: 'Public client',
+    url: 'https://boykoizmael.github.io/Webcreator1117/game.html'
+  },
+  {
+    id: 'q13x-1.8.8',
+    name: 'EaglercraftX 1.8.8 (WASM Client)',
+    version: '1.8.8 WASM',
+    description: 'Verified WebAssembly client hosted on Eaglercraft Q13X.',
+    badge: 'Verified client',
+    url: 'https://eaglercraft.q13x.com/1.8.8/wasm/?retina=true'
   },
   {
     id: 'wasm-1.8.8',

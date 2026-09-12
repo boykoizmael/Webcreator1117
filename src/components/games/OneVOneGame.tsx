@@ -17,8 +17,8 @@ interface OneVOneGameProps {
 }
 
 const MIRRORS = [
-  { id: 'primary', name: '1v1lol.me', url: 'https://1v1lol.me/' },
-  { id: 'www', name: '1v1lol.me (WWW)', url: 'https://www.1v1lol.me/' }
+  { id: 'www', name: '1v1lol.me (WWW)', url: 'https://www.1v1lol.me/' },
+  { id: 'primary', name: '1v1lol.me', url: 'https://1v1lol.me/' }
 ];
 
 export const OneVOneGame: React.FC<OneVOneGameProps> = ({
