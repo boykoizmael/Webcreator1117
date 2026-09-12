@@ -116,6 +116,14 @@ export const OneVOneGame: React.FC<OneVOneGameProps> = ({
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
           sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-top-navigation"
           onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false);
+            const fallbackMirror = MIRRORS.find(mirror => mirror.id !== effectiveMirror.id);
+            if (fallbackMirror) {
+              setActiveMirror(fallbackMirror);
+              setKey(prev => prev + 1);
+            }
+          }}
         />
 
         {/* Fallback & Controls hint overlay at bottom */}

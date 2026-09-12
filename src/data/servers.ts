@@ -105,7 +105,7 @@ export const CLIENT_MIRRORS: ClientMirror[] = [
     name: 'EaglercraftX 1.8.8 (Built-in Server)',
     version: '1.8.8 Built-in',
     description: 'Hosted directly on this domain. Ultra-fast loading, zero external blocking, singleplayer & multiplayer enabled.',
-    badge: '100% Reliable',
+    badge: 'Local client',
     url: './game.html'
   },
   {
@@ -113,7 +113,7 @@ export const CLIENT_MIRRORS: ClientMirror[] = [
     name: 'EaglercraftX 1.8.8 (GitHub Pages Mirror)',
     version: '1.8.8 GitHub',
     description: 'Official community mirror hosted on GitHub Pages.',
-    badge: 'Official Mirror',
+    badge: 'Community mirror',
     url: 'https://eaglercraft1-8.github.io/'
   },
   {
@@ -123,13 +123,5 @@ export const CLIENT_MIRRORS: ClientMirror[] = [
     description: 'WebAssembly engine with retina resolution.',
     badge: 'Alternative',
     url: 'https://eaglercraft.q13x.com/1.8.8/wasm/?retina=true'
-  },
-  {
-    id: 'wasm-1.12.2',
-    name: 'Eaglercraft 1.12.2 (World of Color)',
-    version: '1.12.2 WASM',
-    description: 'Minecraft 1.12.2 with color update and recipe book.',
-    badge: '1.12.2 Version',
-    url: 'https://eaglercraft.q13x.com/1.12.2/wasm/?retina=true'
   }
 ];
