@@ -106,7 +106,7 @@ export const CLIENT_MIRRORS: ClientMirror[] = [
     version: '1.8.8 Built-in',
     description: 'Hosted directly on this domain. Ultra-fast loading, zero external blocking, singleplayer & multiplayer enabled.',
     badge: '100% Reliable',
-    url: '/game.html'
+    url: './game.html'
   },
   {
     id: 'github-1.8.8',
