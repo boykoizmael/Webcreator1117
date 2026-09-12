@@ -211,21 +211,23 @@ export default function App() {
       )}
 
       {/* Top Navbar */}
-      <Navbar
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={handleToggleFullscreen}
-        activeServerUrl={activeServerUrl}
-        activeMirror={activeMirror}
-        onReloadGame={handleReload}
-        onOpenControls={() => setIsControlsOpen(true)}
-        onOpenSchoolBypass={handleOpenBypassModal}
-        onToggleDecoy={() => setIsDecoyActive(true)}
-        onOpenContactModal={handleOpenContactModal}
-        onOpenAuthModal={handleOpenAuthModal}
-      />
+      {!isFullscreen && (
+        <Navbar
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={handleToggleFullscreen}
+          activeServerUrl={activeServerUrl}
+          activeMirror={activeMirror}
+          onReloadGame={handleReload}
+          onOpenControls={() => setIsControlsOpen(true)}
+          onOpenSchoolBypass={handleOpenBypassModal}
+          onToggleDecoy={() => setIsDecoyActive(true)}
+          onOpenContactModal={handleOpenContactModal}
+          onOpenAuthModal={handleOpenAuthModal}
+        />
+      )}
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+      <main className={`${isFullscreen ? 'fixed inset-0 z-50 h-screen w-screen' : 'flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6'} space-y-6`}>
         {/* Game Viewport Container with Multi-Game Carousel & Side Arrows */}
         <GameViewport
           containerRef={containerRef}
