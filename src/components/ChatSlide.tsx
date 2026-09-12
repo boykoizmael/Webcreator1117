@@ -2,6 +2,7 @@ import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, Smile, Users } from 'lucide-react';
 import { getActiveUser, recordChatMessage } from '../utils/accountManager';
 import { UserAccount } from '../types';
+import { isSupabaseConfigured, supabase } from '../utils/supabaseClient';
 
 interface ChatMessage {
   id: string;
@@ -26,6 +27,13 @@ const readMessages = (): ChatMessage[] => {
     return [];
   }
 };
+
+const mapRemoteMessage = (message: { id: string; username: string; message: string; sent_at: string }): ChatMessage => ({
+  id: message.id,
+  username: message.username,
+  text: message.message,
+  sentAt: message.sent_at
+});
 
 export const ChatSlide: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(readMessages);
@@ -53,7 +61,39 @@ export const ChatSlide: React.FC = () => {
     };
     window.addEventListener('storage', handleStorageChange);
 
+    let isMounted = true;
+    if (supabase) {
+      supabase
+        .from('chat_messages')
+        .select('id, username, message, sent_at')
+        .order('sent_at', { ascending: true })
+        .limit(MAX_MESSAGES)
+        .then(({ data, error }) => {
+          if (!error && data && isMounted) setMessages(data.map(mapRemoteMessage));
+        });
+
+      const subscription = supabase
+        .channel('live-chat-messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+          if (isMounted) {
+            setMessages(previous => previous.some(message => message.id === payload.new.id)
+              ? previous
+              : [...previous, mapRemoteMessage(payload.new as { id: string; username: string; message: string; sent_at: string })].slice(-MAX_MESSAGES));
+          }
+        })
+        .subscribe();
+
+      return () => {
+        isMounted = false;
+        window.removeEventListener('auth-state-changed', handleAuthChange);
+        window.removeEventListener('storage', handleStorageChange);
+        channelRef.current?.close();
+        void supabase.removeChannel(subscription);
+      };
+    }
+
     return () => {
+      isMounted = false;
       window.removeEventListener('auth-state-changed', handleAuthChange);
       window.removeEventListener('storage', handleStorageChange);
       channelRef.current?.close();
@@ -75,7 +115,7 @@ export const ChatSlide: React.FC = () => {
     }
   };
 
-  const handleSend = (event: FormEvent) => {
+  const handleSend = async (event: FormEvent) => {
     event.preventDefault();
     const text = messageText.trim();
     if (!text || isSendLocked) return;
@@ -87,7 +127,21 @@ export const ChatSlide: React.FC = () => {
       sentAt: new Date().toISOString()
     };
 
-    persistMessages([...messages, message]);
+    if (supabase) {
+      const { error } = await supabase.from('chat_messages').insert({
+        id: message.id,
+        username: message.username,
+        message: message.text,
+        sent_at: message.sentAt
+      });
+      if (error) {
+        persistMessages([...messages, message]);
+      } else {
+        setMessages(previous => previous.some(item => item.id === message.id) ? previous : [...previous, message].slice(-MAX_MESSAGES));
+      }
+    } else {
+      persistMessages([...messages, message]);
+    }
     recordChatMessage(message.username);
     window.dispatchEvent(new CustomEvent('chat-updated'));
     setMessageText('');
@@ -118,7 +172,7 @@ export const ChatSlide: React.FC = () => {
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2a3348] bg-[#171e2b]">
             <div>
               <h2 className="text-sm font-bold text-white">Live Chat</h2>
-              <p className="text-[11px] text-gray-400">Messages sync between open copies of this site.</p>
+              <p className="text-[11px] text-gray-400">{isSupabaseConfigured ? 'Shared live chat across the website.' : 'Local chat mode: configure Supabase to share messages.'}</p>
             </div>
           </div>
 
