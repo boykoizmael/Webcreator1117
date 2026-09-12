@@ -1,0 +1,6 @@
+{
+  "name": "Eaglecraft Web",
+  "description": "Play Eaglecraft in your browser with active multiplayer server URLs, working fullscreen mode, and instant server connect.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

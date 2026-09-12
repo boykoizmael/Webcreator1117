@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eaglecraft Web</title>
+    <meta name="description" content="Play Eaglecraft in your browser with active multiplayer server URLs, working fullscreen mode, and instant server connect." />
+    <meta property="og:title" content="Eaglecraft Web" />
+    <meta property="og:description" content="Play Eaglecraft in your browser with active multiplayer server URLs, working fullscreen mode, and instant server connect." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- Instant Anti-Detection Pre-Hydration Cloak (Clever / Green River College / 1117) -->
+    <script>
+      (function() {
+        try {
+          var path = window.location.pathname.toLowerCase();
+          var saved = localStorage.getItem('eaglecraft_tab_cloak');
+          
+          if (path.indexOf('clever') !== -1 || path.indexOf('clover') !== -1 || saved === 'clever') {
+            document.title = "Clever | Portal - Green River College Student LMS 1117";
+            var link = document.createElement('link');
+            link.rel = 'shortcut icon';
+            link.href = 'https://assets.clever.com/assets/favicon.ico';
+            document.head.appendChild(link);
+          } else if (path.indexOf('greenriver') !== -1 || path.indexOf('1117') !== -1 || path.indexOf('learning') !== -1 || saved === 'greenriver' || !saved) {
+            document.title = "Green River College | Student Portal - Course EDU 1117";
+            var link = document.createElement('link');
+            link.rel = 'shortcut icon';
+            link.href = 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico';
+            document.head.appendChild(link);
+          } else if (saved === 'education_priest') {
+            document.title = "Education Priest Academic Portal - Course Ref 1117";
+          } else if (saved === 'classroom') {
+            document.title = "Classes";
+          } else if (saved === 'canvas') {
+            document.title = "Dashboard - Canvas";
+          } else if (saved === 'docs') {
+            document.title = "Untitled document - Google Docs";
+          } else if (saved === 'desmos') {
+            document.title = "Desmos | Graphing Calculator";
+          }
+        } catch(e) {}
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#111215] text-[#e2e8f0] antialiased overflow-x-hidden selection:bg-emerald-500/30 selection:text-emerald-300">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
