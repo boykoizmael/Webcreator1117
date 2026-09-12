@@ -53,12 +53,13 @@ export const ChatSlide: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getActiveUser());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const pendingMessageIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const handleAuthChange = () => setCurrentUser(getActiveUser());
     window.addEventListener('auth-state-changed', handleAuthChange);
 
-    if ('BroadcastChannel' in window) {
+    if (!supabase && 'BroadcastChannel' in window) {
       channelRef.current = new BroadcastChannel(CHAT_CHANNEL_NAME);
       channelRef.current.onmessage = event => {
         if (event.data?.type === 'chat-updated') {
@@ -70,7 +71,7 @@ export const ChatSlide: React.FC = () => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === CHAT_STORAGE_KEY) setMessages(readMessages());
     };
-    window.addEventListener('storage', handleStorageChange);
+    if (!supabase) window.addEventListener('storage', handleStorageChange);
 
     let isMounted = true;
     if (supabase) {
@@ -78,7 +79,7 @@ export const ChatSlide: React.FC = () => {
         if (remoteMessages && isMounted) {
           setMessages(previous => {
             const remoteIds = new Set(remoteMessages.map(message => message.id));
-            const pendingMessages = previous.filter(message => !remoteIds.has(message.id));
+            const pendingMessages = previous.filter(message => pendingMessageIdsRef.current.has(message.id) && !remoteIds.has(message.id));
             return [...remoteMessages, ...pendingMessages].slice(-MAX_MESSAGES);
           });
           setChatStatus('Connected');
@@ -92,7 +93,7 @@ export const ChatSlide: React.FC = () => {
           if (remoteMessages && isMounted) {
             setMessages(previous => {
               const remoteIds = new Set(remoteMessages.map(message => message.id));
-              const pendingMessages = previous.filter(message => !remoteIds.has(message.id));
+              const pendingMessages = previous.filter(message => pendingMessageIdsRef.current.has(message.id) && !remoteIds.has(message.id));
               return [...remoteMessages, ...pendingMessages].slice(-MAX_MESSAGES);
             });
             setChatStatus('Connected');
@@ -114,7 +115,7 @@ export const ChatSlide: React.FC = () => {
       return () => {
         isMounted = false;
         window.removeEventListener('auth-state-changed', handleAuthChange);
-        window.removeEventListener('storage', handleStorageChange);
+        if (!supabase) window.removeEventListener('storage', handleStorageChange);
         channelRef.current?.close();
         window.clearInterval(refreshTimer);
         void supabase.removeChannel(subscription);
@@ -124,7 +125,7 @@ export const ChatSlide: React.FC = () => {
     return () => {
       isMounted = false;
       window.removeEventListener('auth-state-changed', handleAuthChange);
-      window.removeEventListener('storage', handleStorageChange);
+      if (!supabase) window.removeEventListener('storage', handleStorageChange);
       channelRef.current?.close();
     };
   }, []);
@@ -156,6 +157,7 @@ export const ChatSlide: React.FC = () => {
       sentAt: new Date().toISOString()
     };
 
+    pendingMessageIdsRef.current.add(message.id);
     if (supabase) {
       const { error } = await supabase.from('chat_messages').insert({
         id: message.id,
@@ -167,6 +169,7 @@ export const ChatSlide: React.FC = () => {
         persistMessages([...messages, message]);
         setChatStatus(`Send failed: ${error.message}`);
       } else {
+        pendingMessageIdsRef.current.delete(message.id);
         setMessages(previous => previous.some(item => item.id === message.id) ? previous : [...previous, message].slice(-MAX_MESSAGES));
         setChatStatus('Connected');
       }
