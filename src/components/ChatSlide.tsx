@@ -49,6 +49,7 @@ export const ChatSlide: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(readMessages);
   const [messageText, setMessageText] = useState('');
   const [isSendLocked, setIsSendLocked] = useState(false);
+  const [chatStatus, setChatStatus] = useState<string>('Connecting...');
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => getActiveUser());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<BroadcastChannel | null>(null);
@@ -74,12 +75,28 @@ export const ChatSlide: React.FC = () => {
     let isMounted = true;
     if (supabase) {
       fetchRemoteMessages().then(remoteMessages => {
-        if (remoteMessages && isMounted) setMessages(remoteMessages);
+        if (remoteMessages && isMounted) {
+          setMessages(previous => {
+            const remoteIds = new Set(remoteMessages.map(message => message.id));
+            const pendingMessages = previous.filter(message => !remoteIds.has(message.id));
+            return [...remoteMessages, ...pendingMessages].slice(-MAX_MESSAGES);
+          });
+          setChatStatus('Connected');
+        } else if (isMounted) {
+          setChatStatus('Chat database unavailable');
+        }
       });
 
       const refreshTimer = window.setInterval(() => {
         fetchRemoteMessages().then(remoteMessages => {
-          if (remoteMessages && isMounted) setMessages(remoteMessages);
+          if (remoteMessages && isMounted) {
+            setMessages(previous => {
+              const remoteIds = new Set(remoteMessages.map(message => message.id));
+              const pendingMessages = previous.filter(message => !remoteIds.has(message.id));
+              return [...remoteMessages, ...pendingMessages].slice(-MAX_MESSAGES);
+            });
+            setChatStatus('Connected');
+          }
         });
       }, 2500);
 
@@ -148,8 +165,10 @@ export const ChatSlide: React.FC = () => {
       });
       if (error) {
         persistMessages([...messages, message]);
+        setChatStatus(`Send failed: ${error.message}`);
       } else {
         setMessages(previous => previous.some(item => item.id === message.id) ? previous : [...previous, message].slice(-MAX_MESSAGES));
+        setChatStatus('Connected');
       }
     } else {
       persistMessages([...messages, message]);
@@ -184,7 +203,7 @@ export const ChatSlide: React.FC = () => {
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[#2a3348] bg-[#171e2b]">
             <div>
               <h2 className="text-sm font-bold text-white">Live Chat</h2>
-              <p className="text-[11px] text-gray-400">{isSupabaseConfigured ? 'Shared live chat across the website.' : 'Local chat mode: configure Supabase to share messages.'}</p>
+              <p className="text-[11px] text-gray-400">{isSupabaseConfigured ? `Shared live chat across the website. ${chatStatus}` : 'Local chat mode: configure Supabase to share messages.'}</p>
             </div>
           </div>
 
