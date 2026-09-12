@@ -35,6 +35,16 @@ const mapRemoteMessage = (message: { id: string; username: string; message: stri
   sentAt: message.sent_at
 });
 
+const fetchRemoteMessages = async () => {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('id, username, message, sent_at')
+    .order('sent_at', { ascending: true })
+    .limit(MAX_MESSAGES);
+  return error || !data ? null : data.map(mapRemoteMessage);
+};
+
 export const ChatSlide: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(readMessages);
   const [messageText, setMessageText] = useState('');
@@ -63,14 +73,15 @@ export const ChatSlide: React.FC = () => {
 
     let isMounted = true;
     if (supabase) {
-      supabase
-        .from('chat_messages')
-        .select('id, username, message, sent_at')
-        .order('sent_at', { ascending: true })
-        .limit(MAX_MESSAGES)
-        .then(({ data, error }) => {
-          if (!error && data && isMounted) setMessages(data.map(mapRemoteMessage));
+      fetchRemoteMessages().then(remoteMessages => {
+        if (remoteMessages && isMounted) setMessages(remoteMessages);
+      });
+
+      const refreshTimer = window.setInterval(() => {
+        fetchRemoteMessages().then(remoteMessages => {
+          if (remoteMessages && isMounted) setMessages(remoteMessages);
         });
+      }, 2500);
 
       const subscription = supabase
         .channel('live-chat-messages')
@@ -88,6 +99,7 @@ export const ChatSlide: React.FC = () => {
         window.removeEventListener('auth-state-changed', handleAuthChange);
         window.removeEventListener('storage', handleStorageChange);
         channelRef.current?.close();
+        window.clearInterval(refreshTimer);
         void supabase.removeChannel(subscription);
       };
     }
